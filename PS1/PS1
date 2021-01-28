@@ -1,1 +1,175 @@
+---
+title: "PS_1 Bern"
+output: html_document
+---
 
+
+```{r}
+library(ggplot2)
+library(cowplot) 
+library(dplyr)
+```
+
+
+```{r}
+#################################################
+##Exploration of collections of bernoulli variables
+#################################################
+
+set.seed(12311)
+x1<-matrix(rbinom(1000,1,.5),100,10)
+##Let's pretend that x1 is item response data from a test. So 1s and 0s are correct/incorrect responses (rows are people and columns are items).
+##For fun we can look at the correlation across items and the variation in row sums (ie, total scores)
+par(mfrow=c(2,2))
+
+cor(x1)
+hist(rowSums(x1))
+sd(colSums(x1))-50.2
+```
+
+##Q. If you considered the 1s/0s correct and incorrect responses to test items (where the rows are people and the columns are items), does this seem like it could have come from a realistic scenario? How might we know? 
+
+
+#################################################
+##Feel free to ignore this chunk of code (skip ahead to below question). I'm going to generate a new set of data. 
+```{r}
+set.seed(12311)
+th<-matrix(rnorm(100),100,10,byrow=FALSE)
+diff<-matrix<-matrix(rnorm(10),100,10,byrow=TRUE)
+kern<- exp(th - diff)
+pr<-kern/(1+kern)
+test<-matrix(runif(1000),100,10)
+x2<-ifelse(pr>test,1,0)
+
+colSums(x1)
+colSums(x2)
+```
+
+
+
+##Q. Now, let's ask the same questino of the new matrix x2. Does it seem like realistic item response data? Specifically, how does it compare to the first matrix x1 in terms of whether it seems like a realistic set of item responses? What characteristics influence your opinion on this point?
+
+
+
+```{r}
+cor(x2)
+sd(rowSums(x2))
+```
+
+```{r}
+load("ps1-logreg.Rdata")
+
+data.frame(df)
+```
+
+
+```{r}
+View(df)
+m1<-glm(y1~x,df,family="binomial")
+summary(m1)
+# Lets calculate R-square for the first model "m1"
+ll.null1<-m1$null.deviance/-2
+ll.proposed1<-m1$deviance/-2
+(ll.null1-ll.proposed1)/ll.null1
+1-pchisq(2*(ll.proposed1-ll.null1), df=(length(m1$coefficients)-1))
+
+
+m2<-glm(y2~x,df,family="binomial")
+summary(m2)
+# Lets calculate R-square for the second model "m2"
+ll.null2<-m2$null.deviance/-2
+ll.proposed2<-m2$deviance/-2
+(ll.null2-ll.proposed2)/ll.null2
+1-pchisq(2*(ll.proposed2-ll.null2), df=(length(m2$coefficients)-1))
+```
+
+```{r}
+#lets calculate p values
+1-pchisq(1386.1, 999)   # Null Deviance, m1 _ sig
+1-pchisq(1204.9, 998)  # Residual deviance, m1 _sig
+
+1-pchisq(1152.34, 999) # Null Deviance, m2 _ sig
+1-pchisq(896.89, 998)  # Residual deviance, m2 - unsig
+
+```
+
+Questions: (A) How would you compare the association between y1 or y2 & x?
+
+(B) How would you interpret the regression coefficients from (say) m1?
+
+
+```{r}
+coef(m1)
+#deriving the odds ratio
+exp(coef(m1))
+
+# This is just curious, building confidentce interval for odds ratios
+exp(confint(m1))
+```
+
+(C) Do m1 and m2 show equivalent model fit? Can you notice anything peculiar about either y1 or y2 (in terms of their association with x)? [Note: This one is sneaky. I’d encourage you to avoid fit statistics and look at techniques for model diagnostics (e.g., residuals).]
+
+```{r}
+#Lets look at the residuals
+par(mfrow=c(4, 2))
+
+hist(resid(m1, type="deviance"))
+hist(resid(m2, type="deviance"))
+
+plot(density(resid(m1, type="response")))
+plot(density(resid(m2, type="response")))
+#lines(density(resid(m1, type="response")),  col="red")
+
+plot(df$x, jitter(df$ y1, 0.15), pch=19)
+xv1 <- seq(min(df$x), max(df$x), 0.01)
+yv1 <- predict(m1, list(x=xv1), type="response")
+lines(xv1, yv1, col ="red")
+
+plot(df$x, jitter(df$y2, 0.15), pch=19)
+xv2 <- seq(min(df$x), max(df$x), 0.01)
+yv2 <- predict(m2, list(x=xv2), type="response")
+lines(xv2, yv2, col ="red")
+
+plot(df$x, jitter(df$y2, 0.15), pch=19)
+xv2 <- seq(min(df$x), max(df$x), 0.01)
+yv2 <- predict(m2, list(x=xv2), type="response")
+lines(xv2, yv2, col ="red")
+```
+
+
+```{r}
+hist(resid(m2, type="deviance"))
+, breaks=seq(-10, 20, 0.4)
+
+```
+
+
+
+breaks=seq(-10,20,0.4))
+hist(m2$residuals, breaks=seq(-67,12,0.5))
+par(mfrow=c(2,1))
+r= residuals(m1)
+f= (fitted.values(m1)<=6)
+hist(r[f])
+hist(r[!f])
+
+par(mfrow=c(1,1))
+
+
+```{r}
+#par(mfrow=c(2, 2))
+#plot(df$x, jitter(df$ y1, 0.15), pch=19)
+#xv1 <- seq(min(x), max(x), 0.01)
+#yv1 <- predict(m1, list(x=xv1), type="response")
+#lines(xv1, yv1, col ="red")
+
+#plot(df$x, jitter(df$y2, 0.15), pch=19)
+#xv2 <- seq(min(x), max(x), 0.01)
+#yv2 <- predict(m2, list(x=xv2), type="response")
+#lines(xv2, yv2, col ="red")
+```
+
+```{r}
+ggplot(df, aes(x, y1)) +geom_point() +geom_smooth(method = "glm", se = FALSE, method.args = list(family = "binomial"))
+ggplot(df, aes(x, y2)) +geom_point()+geom_smooth(method = "glm", se = FALSE, method.args = list(family = "binomial"))
+```
