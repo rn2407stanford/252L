@@ -1,1 +1,322 @@
-hghg
+---
+title: "PS4"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r}
+library(mirt)
+read.table(file="https://raw.githubusercontent.com/ben-domingue/252L/master/data/emp-3pl-math-reading.txt",header=TRUE)->x
+dim(x)
+x[rowSums(is.na(x))==0,]->x
+dim(x)
+```
+
+```{r}
+grep("r.mc",names(x))->index.r
+#View(rowSums(x[, 2:102]))
+rowSums(x[,index.r])->rs
+as.numeric(rs<mean(rs))-> gr #this can be treated as the confounding variable in the DIF analysis
+grep("m.mc",names(x))->index.m
+rowSums(x[,index.m])->th #this can be treated as ability in DIF analysis
+
+#collect math observed scores and put into matrix
+x[,index.m]->resp.m
+x[,index.r]->resp.r
+x[,index.m]->y # Y is the matrix of items for math items. 
+```
+
+# Building the (1) basic model
+
+```{r}
+s<-list()
+for (i in 1:ncol(y)) s[[i]]<-glm(y[,i]~th, family="binomial")
+lapply(s,function(x) summary(x)$coef)
+```
+
+```{r}
+s
+```
+
+# Building the (2) model (only Uniform DIF)
+
+```{r}
+#conducting regression to look at group differences
+m<-list()
+for (i in 1:ncol(y)) m[[i]]<-glm(y[,i]~th+gr, family="binomial")
+lapply(m,function(x) summary(x)$coef)
+```
+
+```{r}
+m
+```
+
+# Building (3) model (Uniform and Nonuniform DIF)
+```{r}
+l<-list()
+for (i in 1:ncol(y)) l[[i]]<-glm(y[,i]~th+gr+th*gr, family="binomial")
+lapply(l,function(x) summary(x)$coef)
+```
+
+```{r}
+l
+```
+
+
+```{r}
+library("difR")
+library("ltm")
+```
+
+
+```{r}
+resp.m1<-cbind(resp.m, gr)
+
+```
+
+# Building the first Model (Only Uniform DIF)
+
+```{r}
+vxq <-difLogistic(resp.m1, group="gr",type="udif", focal.name=1, member.type = "group", match = th, criterion = "LRT", purify=FALSE)
+vxq
+```
+
+# Ploting Item Curves for Uniform DIFs
+
+```{r}
+plot(vxq,plot= "itemCurve", item=1)
+plot(vxq,plot= "itemCurve", item=2)
+plot(vxq,plot= "itemCurve", item=3)
+plot(vxq,plot= "itemCurve", item=4)
+plot(vxq,plot= "itemCurve", item=5)
+plot(vxq,plot= "itemCurve", item=6)
+plot(vxq,plot= "itemCurve", item=7)
+plot(vxq,plot= "itemCurve", item=8)
+plot(vxq,plot= "itemCurve", item=9)
+plot(vxq,plot= "itemCurve", item=10)
+plot(vxq,plot= "itemCurve", item=11)
+plot(vxq,plot= "itemCurve", item=12)
+plot(vxq,plot= "itemCurve", item=13)
+plot(vxq,plot= "itemCurve", item=14)
+plot(vxq,plot= "itemCurve", item=15)
+plot(vxq,plot= "itemCurve", item=16)
+plot(vxq,plot= "itemCurve", item=17)
+plot(vxq,plot= "itemCurve", item=18)
+plot(vxq,plot= "itemCurve", item=19)
+plot(vxq,plot= "itemCurve", item=20)
+plot(vxq,plot= "itemCurve", item=21)
+plot(vxq,plot= "itemCurve", item=22)
+plot(vxq,plot= "itemCurve", item=23)
+plot(vxq,plot= "itemCurve", item=24)
+plot(vxq,plot= "itemCurve", item=25)
+plot(vxq,plot= "itemCurve", item=26)
+plot(vxq,plot= "itemCurve", item=27)
+plot(vxq,plot= "itemCurve", item=28)
+plot(vxq,plot= "itemCurve", item=29)
+plot(vxq,plot= "itemCurve", item=30)
+plot(vxq,plot= "itemCurve", item=31)
+plot(vxq,plot= "itemCurve", item=32)
+plot(vxq,plot= "itemCurve", item=33)
+plot(vxq,plot= "itemCurve", item=34)
+plot(vxq,plot= "itemCurve", item=35)
+plot(vxq,plot= "itemCurve", item=36)
+plot(vxq,plot= "itemCurve", item=37)
+plot(vxq,plot= "itemCurve", item=38)
+plot(vxq,plot= "itemCurve", item=39)
+plot(vxq,plot= "itemCurve", item=40)
+plot(vxq,plot= "itemCurve", item=41)
+plot(vxq,plot= "itemCurve", item=42)
+plot(vxq,plot= "itemCurve", item=43)
+plot(vxq,plot= "itemCurve", item=44)
+plot(vxq,plot= "itemCurve", item=45)
+
+```
+
+# Building the first Model (Both Uniform and Nonuniform DIFs)
+
+```{r}
+vxq <-difLogistic(resp.m1, group="gr",type="both", focal.name=1, member.type = "group", match = th, criterion = "LRT", purify=FALSE)
+vxq
+```
+
+# Ploting Item Curves for both Uniform and NonUnifmrom DIFs
+
+```{r}
+plot(vxq,plot= "itemCurve", item=1)
+plot(vxq,plot= "itemCurve", item=2)
+plot(vxq,plot= "itemCurve", item=3)
+plot(vxq,plot= "itemCurve", item=4)
+plot(vxq,plot= "itemCurve", item=5)
+plot(vxq,plot= "itemCurve", item=6)
+plot(vxq,plot= "itemCurve", item=7)
+plot(vxq,plot= "itemCurve", item=8)
+plot(vxq,plot= "itemCurve", item=9)
+plot(vxq,plot= "itemCurve", item=10)
+plot(vxq,plot= "itemCurve", item=11)
+plot(vxq,plot= "itemCurve", item=12)
+plot(vxq,plot= "itemCurve", item=13)
+plot(vxq,plot= "itemCurve", item=14)
+plot(vxq,plot= "itemCurve", item=15)
+plot(vxq,plot= "itemCurve", item=16)
+plot(vxq,plot= "itemCurve", item=17)
+plot(vxq,plot= "itemCurve", item=18)
+plot(vxq,plot= "itemCurve", item=19)
+plot(vxq,plot= "itemCurve", item=20)
+plot(vxq,plot= "itemCurve", item=21)
+plot(vxq,plot= "itemCurve", item=22)
+plot(vxq,plot= "itemCurve", item=23)
+plot(vxq,plot= "itemCurve", item=24)
+plot(vxq,plot= "itemCurve", item=25)
+plot(vxq,plot= "itemCurve", item=26)
+plot(vxq,plot= "itemCurve", item=27)
+plot(vxq,plot= "itemCurve", item=28)
+plot(vxq,plot= "itemCurve", item=29)
+plot(vxq,plot= "itemCurve", item=30)
+plot(vxq,plot= "itemCurve", item=31)
+plot(vxq,plot= "itemCurve", item=32)
+plot(vxq,plot= "itemCurve", item=33)
+plot(vxq,plot= "itemCurve", item=34)
+plot(vxq,plot= "itemCurve", item=35)
+plot(vxq,plot= "itemCurve", item=36)
+plot(vxq,plot= "itemCurve", item=37)
+plot(vxq,plot= "itemCurve", item=38)
+plot(vxq,plot= "itemCurve", item=39)
+plot(vxq,plot= "itemCurve", item=40)
+plot(vxq,plot= "itemCurve", item=41)
+plot(vxq,plot= "itemCurve", item=42)
+plot(vxq,plot= "itemCurve", item=43)
+plot(vxq,plot= "itemCurve", item=44)
+plot(vxq,plot= "itemCurve", item=45)
+```
+
+
+histogram of p values. significant p values for dif.
+
+
+
+# BONUS: Comparing IRT and non IRT models.
+
+```{r}
+dichoDif(resp.m1, group = 46, focal.name = 1, method = c( "TID", "MH", "Std", "Logistic", "SIBTEST", "Lord", "Raju"), model="2PL", correct = FALSE, thrSTD = 0.08, thrTID = 1, purify = FALSE)
+```
+
+
+## QUESTION 2-POLYTOMOUS ITEMS.
+
+```{r}
+set.seed(12311)
+library(mirt)
+read.table("https://raw.githubusercontent.com/ben-domingue/252L/master/data/emp-reading-3pl-gpcm.txt",header=TRUE)->resp
+resp[rowSums(is.na(resp))==0,]->resp
+resp[1:5000,]->resp
+
+#just the constructed response items
+grep("^cr",names(resp))->index
+resp[,index]->resp
+##Let's look at different dichotomizations for just a single item, #2
+mod <- mirt(resp, itemtype="gpcmIRT",1)
+##lets look at item 2
+table(resp[,2]) #note the number of categories
+extr.2 <- extract.item(mod, 2)
+Theta <- matrix(seq(-4,4, by = .1))
+info.2 <- iteminfo(extr.2, Theta)
+plot(Theta,info.2,type="l")
+for (i in 1:3) {
+    resp->tmp
+    ifelse(tmp[,2]>=i,1,0)->tmp[,2]
+    mod <- mirt(tmp, itemtype="gpcmIRT",1)
+    #extr.2 <- extract.item(mod, 2)
+    #info.tmp <- iteminfo(extr.2, Theta)
+    co<-coef(mod)[[2]]
+    kern<-co[1]*(Theta-co[2])
+    exp(kern)->ek
+    p<-ek/(1+ek)
+    info.tmp<-co[1]^2*p*(1-p)
+    lines(Theta,info.tmp,col="red")
+} #how does information of dichotomized versions compare to overall info
+##two general questions coming up. it might be easier to make a simplifying assumption (e.g., things are just coded 012):
+
+for (i in 1:ncol(resp)) ifelse(resp[,i]>2,2,resp[,i])->resp[,i]
+
+
+```
+
+
+##1. what is the effect of dichotomizing low (e.g., responses of 1 and 2 become 1) versus high (e.g., responses of 0 and 1 become 0) on the central tendency and spread of information curves.
+##2. how do standard errors for theta compare when we estimate the GPCM on the data versus low and high dichotimizations?
+       
+
+
+#two general questions coming up. it might be easier to make a simplifying assumption (e.g., things are just coded 012):
+for (i in 1:ncol(resp)) ifelse(resp[,i]>2,2,resp[,i])->resp[,i]
+
+
+
+
+https://github.com/ben-domingue/252L/blob/master/cF/EM-coins.R
+
+
+
+```{r}
+EM<-function(dat,init=c(.45),N=10) {
+  Estep<-function(n,N,p1,p2) {
+    p1^n*(1-p1)^(N-n)->z1
+    z1/(z1+z2)->pr1
+    c(pr1*n,pr1*(N-n),pr2*n,pr2*(N-n))
+  }
+  Vectorize(Estep,vectorize.args="n")->Estep
+  Mstep<-function(mat) {
+    rowSums(mat)->rs
+    c(rs[1]/(rs[1]+rs[2]),rs[3]/(rs[3]+rs[4]))
+  }
+  ##
+  init -> new.est
+  c(10,10)->old.est
+  counter<-1
+  ##
+  while (max(abs(old.est-new.est))>.001) {
+    new.est->old.est
+    Estep(dat,p1=new.est[1],p2=new.est[2],N=N)->mat
+    Mstep(mat)->new.est
+    counter<-counter+1
+  }
+  new.est
+}
+EM(dat=c(5,9,8,4,7),init=c(.52,.5)) #this matches results in Fig 1 here: http://www.nature.com/nbt/journal/v26/n8/full/nbt1406.html
+```
+
+
+##i'm assuming you have some function EM() that will compute the relevant probabilities.
+##the data here will consist of the sums of heads (n) from N (probably 10) coin tosses
+
+```{r}
+EM(dat=c(5,9,8,4,7),init=c(.52,.5)) #http://www.nature.com/nbt/journal/v26/n8/full/nbt1406.html
+```
+
+##using the EM function you can start to ask questions.
+##a. how sensitive is estimation (e.g., in terms of bias or mean squared error) to initial values (e.g., c(.52,.5) in above)?
+##b. how sensitive is estimation to the location of true parameters (e.g., the "p" argument below)?
+##c. to the values of n and N?
+
+##you don't necessarily need to answer all of these. i am just hoping you experiment enough with this to develop some intuition for how estimation depends on the specifics of a given scenario.
+##in case it helps, here is a function to simulate data
+```{r}
+set.seed(123)
+sim<-function(N.runs=5,N.flips.per.run=10,p=NULL) {
+    if (is.null(p)) runif(2)->p
+    sort(p)->p
+    dat<-numeric()
+    for (ii in 1:N.runs) {
+        sample(1:2,1)->index
+        rbinom(1,size=N.flips.per.run,prob=p[index])->dat[ii]
+    }
+    dat
+}
+sim()->dat
+
+EM(dat)
+dat
+
+```
