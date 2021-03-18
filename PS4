@@ -64,6 +64,20 @@ lapply(l,function(x) summary(x)$coef)
 l
 ```
 
+# Building the (2) model (only Uniform DIF) for IRT ability estimate
+```{r}
+m<-mirt(y, 1, itemtype="2PL")
+theta<-fscores(m)[,1]
+#conducting glm to look at group differences
+IRT<-list()
+for (i in 1:ncol(y)) IRT[[i]]<-glm(y[,i]~theta+gr, family="binomial")
+lapply(IRT,function(x) summary(x)$coef)
+```
+
+```{r}
+IRT
+```
+
 
 ```{r}
 library("difR")
